@@ -9,6 +9,18 @@ services:
     ports:
       - "5449:5432"
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6381:6379"
+    environment:
+      REDIS_PASSWORD: admin
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    restart: unless-stopped
+
   loki:
     image: grafana/loki:2.9.2
     ports:
@@ -49,3 +61,4 @@ services:
 
 volumes:
   grafana-storage:
+  redis_data:
