@@ -1,14 +1,4 @@
 services:
-  db_posts:
-    image: postgres:latest
-    container_name: db_posts
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: db_posts
-    ports:
-      - "5449:5432"
-
   redis:
     image: redis:7-alpine
     container_name: redis
