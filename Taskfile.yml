@@ -10,6 +10,6 @@ tasks:
     cmds:
       - echo "{{.GREETING}}"
     silent: true
-  run:
+  dev:
     cmds:
-      - go run cmd/main.go
+      - air

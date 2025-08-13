@@ -46,7 +46,7 @@ func (s *service) Create(ctx context.Context, secret *types.Secret) (string, err
 func (s *service) Get(ctx context.Context, key string) (*types.Secret, error) {
 	secretJson, err := s.cache.Get(ctx, key)
 	if err != nil {
-		return nil, err
+		return nil, ErrSecretNotFound
 	}
 
 	var secret types.Secret

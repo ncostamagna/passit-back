@@ -7,6 +7,9 @@ import (
 	"syscall"
 
 	"github.com/joho/godotenv"
+	"github.com/ncostamagna/passit-back/adapters/cache"
+	"github.com/ncostamagna/passit-back/pkg/instance"
+	"github.com/ncostamagna/passit-back/pkg/log"
 	"github.com/ncostamagna/passit-back/pkg/grpc"
 	"github.com/ncostamagna/passit-back/transport/grpcapi"
 )
@@ -14,18 +17,28 @@ import (
 func main() {
 
 	_ = godotenv.Load()
-	host := os.Getenv("GRPC_HOST")
-	addr := os.Getenv("GRPC_PORT")
-	grpcServer := grpc.New(grpc.Configs{
-		Api:  grpcapi.New(nil),
-		Host: host,
-		Addr: addr,
+
+	log := log.New(log.Config{
+		AppName: "passit-back",
+		Level:   "info",
+		AddSource: true,
 	})
+
+	cache := cache.NewCache(os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASS"), 3)
+	srv := instance.NewSecretService(cache, log)
+
+	grpcConfig := grpc.Configs{
+		Api:  grpcapi.New(srv),
+		Host: os.Getenv("GRPC_HOST"),
+		Addr: os.Getenv("GRPC_PORT"),
+	}
+
+	grpcServer := grpc.New(grpcConfig)
 
 	shutdown := make(chan struct{}, 1)
 
 	go func() {
-		slog.Info("Starting grpc server", "host", host, "addr", addr)
+		slog.Info("Starting grpc server", "host", grpcConfig.Host, "addr", grpcConfig.Addr)
 		if err := grpcServer.Serve(); err != nil {
 			slog.Error("Error starting grpc server", "err", err)
 			shutdown <- struct{}{}
