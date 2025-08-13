@@ -36,7 +36,8 @@ func New(cfgs Configs) *Grpc {
 }
 
 func (g *Grpc) Serve() error {
-	lis, err := net.Listen("tcp", g.cfgs.Host+g.cfgs.Addr)
+	address := g.cfgs.Host + ":" + g.cfgs.Addr
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		slog.Error("failed to listen", "error", err)
 		return err
@@ -72,7 +73,8 @@ func (g *Grpc) Name() string {
 
 func (g *Grpc) Healthy() bool {
 	cred := insecure.NewCredentials()
-	conn, err := grpc.Dial(g.cfgs.Host+g.cfgs.Addr, grpc.WithTransportCredentials(cred))
+	address := g.cfgs.Host + ":" + g.cfgs.Addr
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(cred))
 	if err != nil {
 		slog.Error("error starting grpc client", "error", err)
 		return false

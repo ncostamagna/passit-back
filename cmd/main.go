@@ -1,26 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"os"
+	"log/slog"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/ncostamagna/passit-back/pkg/grpc"
+	"github.com/ncostamagna/passit-back/transport/grpcapi"
 )
 
 func main() {
 
-	dotenv.Load()
+	_ = godotenv.Load()
+	host := os.Getenv("GRPC_HOST")
+	addr := os.Getenv("GRPC_PORT")
 	grpcServer := grpc.New(grpc.Configs{
-		Api:  grpcapi.New(app),
-		Host: os.Getenv("GRPC_HOST"),
-		Addr: os.Getenv("GRPC_PORT"),
+		Api:  grpcapi.New(nil),
+		Host: host,
+		Addr: addr,
 	})
 
 	shutdown := make(chan struct{}, 1)
 
 	go func() {
-		if err := s.GrpcServer.Serve(); err != nil {
+		slog.Info("Starting grpc server", "host", host, "addr", addr)
+		if err := grpcServer.Serve(); err != nil {
 			slog.Error("Error starting grpc server", "err", err)
 			shutdown <- struct{}{}
 		}
