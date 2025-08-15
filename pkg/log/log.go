@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -15,6 +15,7 @@ type Config struct {
 }
 
 const logDir = "./logs"
+const permissions = 0666
 
 func New(cfg Config) *slog.Logger {
 	var level slog.Level
@@ -35,7 +36,7 @@ func New(cfg Config) *slog.Logger {
 	timestamp := time.Now().Format("2006-01-02")
 	logFile := filepath.Join(logDir, cfg.AppName+"-"+timestamp+".log")
 
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, permissions)
 	if err != nil {
 		panic("failed to open log file: " + err.Error())
 	}

@@ -4,33 +4,33 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/ncostamagna/passit-back/internal/entities"
 	"github.com/ncostamagna/passit-back/internal/secrets"
-	"github.com/ncostamagna/passit-back/internal/types"
 	grpcPassit "github.com/ncostamagna/passit-proto/go/grpcPassit"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type api struct {
+type API struct {
 	grpcPassit.UnimplementedPassitServer
 	service secrets.Service
 }
 
-func New(app secrets.Service) *api {
-	return &api{
+func New(app secrets.Service) *API {
+	return &API{
 		service: app,
 	}
 }
 
-func (a *api) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretRequest) (*grpcPassit.CreateSecretResponse, error) {
-	
-	slog.Debug("Creating secret", "message", in.Message)
-	
-	secret := &types.Secret{
-		OneTime: in.OneTime,
-		Message: in.Message,
-		Expiration: int32(in.Expiration),
+func (a *API) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretRequest) (*grpcPassit.CreateSecretResponse, error) {
+
+	slog.Debug("Creating secret", "message", in.GetMessage())
+
+	secret := &entities.Secret{
+		OneTime:    in.GetOneTime(),
+		Message:    in.GetMessage(),
+		Expiration: in.GetExpiration(),
 	}
 
 	key, err := a.service.Create(ctx, secret)
@@ -47,11 +47,11 @@ func (a *api) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretReque
 	return res, nil
 }
 
-func (a *api) GetSecret(ctx context.Context, in *grpcPassit.GetSecretRequest) (*grpcPassit.GetSecretResponse, error) {	
-	
-	slog.Debug("Getting secret", "key", in.Key)
+func (a *API) GetSecret(ctx context.Context, in *grpcPassit.GetSecretRequest) (*grpcPassit.GetSecretResponse, error) {
 
-	secret, err := a.service.Get(ctx, in.Key)
+	slog.Debug("Getting secret", "key", in.GetKey())
+
+	secret, err := a.service.Get(ctx, in.GetKey())
 	if err != nil {
 		if err == secrets.ErrSecretNotFound {
 			return nil, status.Errorf(codes.NotFound, "Secret not found")
@@ -68,7 +68,6 @@ func (a *api) GetSecret(ctx context.Context, in *grpcPassit.GetSecretRequest) (*
 	return res, nil
 }
 
-
-func (a *api) Register(s grpc.ServiceRegistrar) {
+func (a *API) Register(s grpc.ServiceRegistrar) {
 	grpcPassit.RegisterPassitServer(s, a)
 }

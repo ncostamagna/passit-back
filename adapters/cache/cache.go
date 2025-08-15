@@ -2,8 +2,9 @@ package cache
 
 import (
 	"context"
-	"github.com/redis/go-redis/v9"
 	"time"
+
+	redis "github.com/redis/go-redis/v9"
 )
 
 type (
@@ -20,10 +21,10 @@ type (
 
 func NewCache(addr string, password string, db int) Cache {
 	rdb := redis.NewClient(&redis.Options{
-        Addr:     addr,
-        Password: password,
-        DB:       db,
-    })
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+	})
 	return &cache{redis: rdb}
 }
 

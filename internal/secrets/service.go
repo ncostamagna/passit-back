@@ -5,31 +5,29 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ncostamagna/passit-back/adapters/cache"
-	"github.com/ncostamagna/passit-back/internal/types"
 	"github.com/google/uuid"
+	"github.com/ncostamagna/passit-back/adapters/cache"
+	"github.com/ncostamagna/passit-back/internal/entities"
 )
 
 type (
-	
 	Service interface {
-		Create(ctx context.Context, secret *types.Secret) (string, error)
-		Get(ctx context.Context, key string) (*types.Secret, error)
+		Create(ctx context.Context, secret *entities.Secret) (string, error)
+		Get(ctx context.Context, key string) (*entities.Secret, error)
 		Delete(ctx context.Context, key string) error
 	}
 
 	service struct {
-		log  *slog.Logger
+		log   *slog.Logger
 		cache cache.Cache
 	}
-
 )
 
 func NewService(log *slog.Logger, cache cache.Cache) Service {
 	return &service{log: log, cache: cache}
 }
 
-func (s *service) Create(ctx context.Context, secret *types.Secret) (string, error) {
+func (s *service) Create(ctx context.Context, secret *entities.Secret) (string, error) {
 	key := uuid.New().String()
 	value, err := secret.ToJSON()
 	if err != nil {
@@ -43,14 +41,14 @@ func (s *service) Create(ctx context.Context, secret *types.Secret) (string, err
 	return key, nil
 }
 
-func (s *service) Get(ctx context.Context, key string) (*types.Secret, error) {
-	secretJson, err := s.cache.Get(ctx, key)
+func (s *service) Get(ctx context.Context, key string) (*entities.Secret, error) {
+	secretJSON, err := s.cache.Get(ctx, key)
 	if err != nil {
 		return nil, ErrSecretNotFound
 	}
 
-	var secret types.Secret
-	if err := secret.FromJSON([]byte(secretJson)); err != nil {
+	var secret entities.Secret
+	if err := secret.FromJSON([]byte(secretJSON)); err != nil {
 		return nil, err
 	}
 

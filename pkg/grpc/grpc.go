@@ -16,7 +16,7 @@ import (
 type Configs struct {
 	Host             string
 	Addr             string
-	Api              serverRegister
+	API              serverRegister
 	EnableReflection bool
 }
 
@@ -25,19 +25,23 @@ type serverRegister interface {
 }
 
 type Grpc struct {
+	ctx      context.Context
 	instance *grpc.Server
 	cfgs     Configs
+	listener *net.ListenConfig
 }
 
-func New(cfgs Configs) *Grpc {
+func New(ctx context.Context, cfgs Configs) *Grpc {
 	return &Grpc{
-		cfgs: cfgs,
+		ctx:      ctx,
+		cfgs:     cfgs,
+		listener: &net.ListenConfig{},
 	}
 }
 
 func (g *Grpc) Serve() error {
 	address := g.cfgs.Host + ":" + g.cfgs.Addr
-	lis, err := net.Listen("tcp", address)
+	lis, err := g.listener.Listen(g.ctx, "tcp", address)
 	if err != nil {
 		slog.Error("failed to listen", "error", err)
 		return err
@@ -49,7 +53,7 @@ func (g *Grpc) Serve() error {
 	healthcheck := health.NewServer()
 	healthgrpc.RegisterHealthServer(g.instance, healthcheck)
 
-	g.cfgs.Api.Register(g.instance)
+	g.cfgs.API.Register(g.instance)
 
 	err = g.instance.Serve(lis)
 	if err != nil {
@@ -74,7 +78,7 @@ func (g *Grpc) Name() string {
 func (g *Grpc) Healthy() bool {
 	cred := insecure.NewCredentials()
 	address := g.cfgs.Host + ":" + g.cfgs.Addr
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(cred))
 	if err != nil {
 		slog.Error("error starting grpc client", "error", err)
 		return false
@@ -87,8 +91,8 @@ func (g *Grpc) Healthy() bool {
 		slog.Error("error checking server health", "error", err)
 		return false
 	}
-	if resp.Status != healthgrpc.HealthCheckResponse_SERVING {
-		slog.Error("server is not serving", "status", resp.Status)
+	if resp.GetStatus() != healthgrpc.HealthCheckResponse_SERVING {
+		slog.Error("server is not serving", "status", resp.GetStatus())
 		return false
 	}
 	return true

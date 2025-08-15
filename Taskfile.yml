@@ -7,9 +7,23 @@ vars:
 
 tasks:
   default:
+    desc: Show all available commands
     cmds:
-      - echo "{{.GREETING}}"
+      - echo "Available commands:"
+      - task --list-all
     silent: true
+  clean:
+    desc: Clean up the project
+    cmds:
+      - go mod tidy
+      - go fmt ./...
+      - goimports -w .
   dev:
     cmds:
       - air
+  test:
+    desc: Run tests and linting with golangci-lint
+    cmds:
+      - go test ./...
+      - golangci-lint run
+    silent: true
