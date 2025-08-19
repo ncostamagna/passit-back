@@ -46,6 +46,6 @@ jobs:
         context: .
         file: ./Dockerfile.app
         push: true
-        tags: ${{ secrets.USERNAME }}/passit-back:${{ github.sha }}
+        tags: ${{ secrets.USERNAME }}/passit-back:${{ github.sha }},${{ secrets.USERNAME }}/passit-back:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
