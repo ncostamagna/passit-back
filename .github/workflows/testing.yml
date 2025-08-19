@@ -2,7 +2,8 @@ name: Testing
 
 on:
   push:
-  pull_request:
+    branches:
+      - main
 
 jobs:
   test:
@@ -11,15 +12,15 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v5
     - name: Setup
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: "1.25"
     - name: Unit Tests
       run: go test ./...
     - name: Linting
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@v8
       with:
         version: latest
         args: --timeout=5m
