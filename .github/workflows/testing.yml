@@ -46,4 +46,4 @@ jobs:
         context: .
         file: ./Dockerfile.app
         push: true
-        tags: ncostamagna/passit-back:latest
+        tags: ncostamagna/passit-back:${{ github.sha }}
