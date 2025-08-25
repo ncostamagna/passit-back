@@ -21,6 +21,11 @@ tasks:
   dev:
     cmds:
       - air
+  setup:
+    cmds:
+      - go mod tidy
+      - docker compose up -d
+    silent: true
   test:
     desc: Run tests and linting with golangci-lint
     cmds:
