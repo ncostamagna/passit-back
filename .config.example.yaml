@@ -1,0 +1,9 @@
+redis:
+  addr: localhost:6381
+  pass: admin
+  db: 3
+api:
+  grpc:
+    host: localhost
+    port: 8050
+token: my-token
