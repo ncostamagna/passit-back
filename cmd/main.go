@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"syscall"
 
-	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/ncostamagna/passit-back/adapters/cache"
 	"github.com/ncostamagna/passit-back/pkg/config"
@@ -19,7 +18,6 @@ import (
 )
 
 type Config struct {
-
 	Redis struct {
 		Addr string `mapstructure:"addr"`
 		Pass string `mapstructure:"pass"`
@@ -43,9 +41,6 @@ func main() {
 		slog.Error("Error initializing config manager", "err", err)
 		os.Exit(1)
 	}
-
-	fmt.Println(cfg)
-	fmt.Println(cfg.API.SuperToken)
 
 	ctx := context.Background()
 	log := log.New(log.Config{

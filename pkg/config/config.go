@@ -29,22 +29,20 @@ func Load(config any, cfgFile string) error {
 	}
 
 	/*
-	PROCESO:
-		Tomas tu key: "database.host"
-		Applica replacer: "database.host" → "database_host"
-		Mayúsculas: "DATABASE_HOST"
-		Ejecuta: os.Getenv("DATABASE_HOST")
-		Te devuelve el resultado
+		PROCESO:
+			Tomas tu key: "database.host"
+			Applica replacer: "database.host" → "database_host"
+			Mayúsculas: "DATABASE_HOST"
+			Ejecuta: os.Getenv("DATABASE_HOST")
+			Te devuelve el resultado
 	*/
-	//viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	//viper.AutomaticEnv()
 
 	// there is a bug, for this reason we are bypassing the env variables
 	for _, key := range getAllKeys(config) {
 		keyEnv := strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
 
 		if val, ok := os.LookupEnv(keyEnv); ok {
-			viper.BindEnv(key, keyEnv)
+			_ = viper.BindEnv(key, keyEnv)
 			viper.Set(key, val)
 		}
 	}
@@ -65,7 +63,7 @@ func getAllKeys(iface interface{}, parts ...string) []string {
 		ifv = ifv.Elem()
 	}
 
-	for i := 0; i < ifv.NumField(); i++ {
+	for i := range ifv.NumField() {
 		v := ifv.Field(i)
 		t := ifv.Type().Field(i)
 		tv, ok := t.Tag.Lookup("mapstructure")
@@ -73,6 +71,7 @@ func getAllKeys(iface interface{}, parts ...string) []string {
 			continue
 		}
 
+		//nolint:exhaustive // default case handles all other reflect.Kind values
 		switch v.Kind() {
 		case reflect.Struct:
 			keys = append(keys, getAllKeys(v.Interface(), append(parts, tv)...)...)
