@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"fmt"
+
 	"github.com/joho/godotenv"
 	"github.com/ncostamagna/passit-back/adapters/cache"
 	"github.com/ncostamagna/passit-back/pkg/config"
@@ -33,11 +35,13 @@ type Config struct {
 	Token string `mapstructure:"token"`
 }
 
+const fileConfid = ".config.yaml"
+
 func main() {
 
 	_ = godotenv.Load()
 	cfg := &Config{}
-	if err := config.Load(cfg, ".config.yaml"); err != nil {
+	if err := config.Load(cfg, fileConfid); err != nil {
 		slog.Error("Error initializing config manager", "err", err)
 		os.Exit(1)
 	}
@@ -48,6 +52,10 @@ func main() {
 		Level:     "info",
 		AddSource: true,
 	})
+
+	log.Info("config file")
+	log.Info(fmt.Sprint(cfg))
+	log.Info(cfg.Redis.Addr)
 
 	redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
 	cache := cache.NewCache(os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASS"), redisDb)
