@@ -8,17 +8,45 @@ import (
 	"strconv"
 	"syscall"
 
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/ncostamagna/passit-back/adapters/cache"
+	"github.com/ncostamagna/passit-back/pkg/config"
 	"github.com/ncostamagna/passit-back/pkg/grpc"
 	"github.com/ncostamagna/passit-back/pkg/instance"
 	"github.com/ncostamagna/passit-back/pkg/log"
 	"github.com/ncostamagna/passit-back/transport/grpcapi"
 )
 
+type Config struct {
+
+	Redis struct {
+		Addr string `mapstructure:"addr"`
+		Pass string `mapstructure:"pass"`
+		Db   int    `mapstructure:"db"`
+	} `mapstructure:"redis"`
+	API struct {
+		GRPC struct {
+			Host string `mapstructure:"host"`
+			Port string `mapstructure:"port"`
+		} `mapstructure:"grpc"`
+		SuperToken string `mapstructure:"super_token"`
+	} `mapstructure:"api"`
+	Token string `mapstructure:"token"`
+}
+
 func main() {
 
 	_ = godotenv.Load()
+	cfg := &Config{}
+	if err := config.Load(cfg, ".config.yaml"); err != nil {
+		slog.Error("Error initializing config manager", "err", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(cfg)
+	fmt.Println(cfg.API.SuperToken)
+
 	ctx := context.Background()
 	log := log.New(log.Config{
 		AppName:   "passit-back",
