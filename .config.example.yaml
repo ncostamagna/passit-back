@@ -6,4 +6,7 @@ api:
   grpc:
     host: localhost
     port: 8050
+  http:
+    host: localhost
+    port: 8084
 token: my-token

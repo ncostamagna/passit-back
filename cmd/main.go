@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"fmt"
 
 	"github.com/ncostamagna/passit-back/adapters/cache"
 	"github.com/ncostamagna/passit-back/pkg/config"
@@ -13,6 +16,7 @@ import (
 	"github.com/ncostamagna/passit-back/pkg/instance"
 	"github.com/ncostamagna/passit-back/pkg/log"
 	"github.com/ncostamagna/passit-back/transport/grpcapi"
+	"github.com/ncostamagna/passit-back/transport/httpapi"
 )
 
 type Config struct {
@@ -26,6 +30,10 @@ type Config struct {
 			Host string `mapstructure:"host"`
 			Port string `mapstructure:"port"`
 		} `mapstructure:"grpc"`
+		HTTP struct {
+			Host string `mapstructure:"host"`
+			Port string `mapstructure:"port"`
+		} `mapstructure:"http"`
 	} `mapstructure:"api"`
 	Token string `mapstructure:"token"`
 }
@@ -57,8 +65,10 @@ func main() {
 	}
 
 	grpcServer := grpc.New(ctx, grpcConfig)
+	apiServer := httpapi.NewHTTPAPI()
 
 	shutdown := make(chan struct{}, 1)
+	errs := make(chan error, 1)
 
 	go func() {
 		slog.Info("Starting grpc server", "host", grpcConfig.Host, "addr", grpcConfig.Addr)
@@ -68,14 +78,22 @@ func main() {
 		}
 	}()
 
+	go func() {
+		url := fmt.Sprintf("%s:%s", cfg.API.HTTP.Host, cfg.API.HTTP.Port)
+		slog.Info("Listening", "url", url)
+		errs <- apiServer.Listen(url)
+	}()
+
 	kill := make(chan os.Signal, 1)
 	signal.Notify(kill, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		<-kill
 		shutdown <- struct{}{}
+		errs <- errors.New("received signal to shutdown")
 	}()
 
 	<-shutdown
+	<-errs
 	grpcServer.Shutdown()
 }
