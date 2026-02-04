@@ -28,7 +28,7 @@ func NewSecretService(cache cache.Cache, logger *slog.Logger) secrets.Service {
 	requestLatency := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "api",
 		Subsystem: "passit_service",
-		Name:      "request_latency_seconds",
+		Name:      "request_latency_seconds_2",
 		Help:      "Total duration of requests in seconds.",
 	}, []string{"method"})
 
