@@ -20,7 +20,8 @@ import (
 )
 
 type Config struct {
-	Redis struct {
+	LogLevel string `mapstructure:"log_level"`
+	Redis    struct {
 		Addr string `mapstructure:"addr"`
 		Pass string `mapstructure:"pass"`
 		Db   int    `mapstructure:"db"`
@@ -51,7 +52,7 @@ func main() {
 	ctx := context.Background()
 	log := log.New(log.Config{
 		AppName:   "passit-back",
-		Level:     "info",
+		Level:     cfg.LogLevel,
 		AddSource: true,
 	})
 

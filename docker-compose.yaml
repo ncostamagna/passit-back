@@ -1,4 +1,18 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: passit-back
+    ports:
+      - "8050:8050"
+      - "8084:8084"
+    volumes:
+      - ./.config.yaml:/app/.config.yaml
+    depends_on:
+      - redis
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: redis

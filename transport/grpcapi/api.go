@@ -2,7 +2,6 @@ package grpcapi
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/ncostamagna/passit-back/internal/entities"
 	"github.com/ncostamagna/passit-back/internal/secrets"
@@ -25,8 +24,6 @@ func New(app secrets.Service) *API {
 
 func (a *API) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretRequest) (*grpcPassit.CreateSecretResponse, error) {
 
-	slog.Debug("Creating secret", "message", in.GetMessage())
-
 	secret := &entities.Secret{
 		OneTime:    in.GetOneTime(),
 		Message:    in.GetMessage(),
@@ -35,11 +32,9 @@ func (a *API) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretReque
 
 	key, err := a.service.Create(ctx, secret)
 	if err != nil {
-		slog.Error("Error creating secret", "error", err)
 		return nil, status.Errorf(codes.Internal, "Error creating secret")
 	}
 
-	slog.Info("Secret created", "key", key)
 	res := &grpcPassit.CreateSecretResponse{
 		Key: key,
 	}
@@ -49,15 +44,11 @@ func (a *API) CreateSecret(ctx context.Context, in *grpcPassit.CreateSecretReque
 
 func (a *API) GetSecret(ctx context.Context, in *grpcPassit.GetSecretRequest) (*grpcPassit.GetSecretResponse, error) {
 
-	slog.Debug("Getting secret", "key", in.GetKey())
-
 	secret, err := a.service.Get(ctx, in.GetKey())
 	if err != nil {
 		if err == secrets.ErrSecretNotFound {
 			return nil, status.Errorf(codes.NotFound, "Secret not found")
 		}
-
-		slog.Error("Error getting secret", "error", err)
 		return nil, status.Errorf(codes.Internal, "Error getting secret")
 	}
 
