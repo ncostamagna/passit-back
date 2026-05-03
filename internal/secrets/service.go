@@ -3,6 +3,7 @@ package secrets
 import (
 	"context"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ func NewService(log *slog.Logger, cache cache.Cache) Service {
 }
 
 func (s *service) Create(ctx context.Context, secret *entities.Secret) (string, error) {
+	s.log.Debug("[Create] secret - message:" + secret.Message + " | oneTime: " + strconv.FormatBool(secret.OneTime))
 	key := uuid.New().String()
 	value, err := secret.ToJSON()
 	if err != nil {
@@ -35,6 +37,7 @@ func (s *service) Create(ctx context.Context, secret *entities.Secret) (string, 
 	}
 
 	if err := s.cache.Set(ctx, key, string(value), time.Duration(secret.Expiration)*time.Second); err != nil {
+		s.log.Debug("[Create] Error secret: " + err.Error())
 		return "", err
 	}
 
@@ -42,8 +45,10 @@ func (s *service) Create(ctx context.Context, secret *entities.Secret) (string, 
 }
 
 func (s *service) Get(ctx context.Context, key string) (*entities.Secret, error) {
+	s.log.Debug("[Get] secret: " + key)
 	secretJSON, err := s.cache.Get(ctx, key)
 	if err != nil {
+		s.log.Debug("[Error] secret not found")
 		return nil, ErrSecretNotFound
 	}
 
@@ -58,6 +63,7 @@ func (s *service) Get(ctx context.Context, key string) (*entities.Secret, error)
 		}
 	}
 
+	s.log.Debug("[GET] secret: " + secret.Message)
 	return &secret, nil
 }
 

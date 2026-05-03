@@ -71,6 +71,10 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - testpackage
+        path: ^tests/
     paths:
       - third_party$
       - builtin$
