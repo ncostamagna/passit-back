@@ -15,8 +15,9 @@ jobs:
         image: redis:7-alpine
         ports:
           - 6381:6379
+        env:
+          REDIS_PASSWORD: admin
         options: >-
-          --requirepass admin
           --health-cmd "redis-cli -a admin ping"
           --health-interval 10s
           --health-timeout 5s
