@@ -8,29 +8,35 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const (
+	metricNamespace = "api"
+	metricSubsystem = "passit_service"
+	metricMethod    = "method"
+)
+
 func NewSecretService(cache cache.Cache, logger *slog.Logger) secrets.Service {
 	service := secrets.NewService(logger, cache)
 
 	requestCount := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "api",
-		Subsystem: "passit_service",
+		Namespace: metricNamespace,
+		Subsystem: metricSubsystem,
 		Name:      "request_count_total",
 		Help:      "Number of requests received.",
-	}, []string{"method"})
+	}, []string{metricMethod})
 
 	requestLatencySummary := prometheus.NewSummaryVec(prometheus.SummaryOpts{
-		Namespace: "api",
-		Subsystem: "passit_service",
+		Namespace: metricNamespace,
+		Subsystem: metricSubsystem,
 		Name:      "request_latency_seconds",
 		Help:      "Total duration of requests in seconds.",
-	}, []string{"method"})
+	}, []string{metricMethod})
 
 	requestLatency := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "api",
-		Subsystem: "passit_service",
+		Namespace: metricNamespace,
+		Subsystem: metricSubsystem,
 		Name:      "request_latency_seconds_2",
 		Help:      "Total duration of requests in seconds.",
-	}, []string{"method"})
+	}, []string{metricMethod})
 
 	prometheus.MustRegister(requestCount, requestLatencySummary, requestLatency)
 

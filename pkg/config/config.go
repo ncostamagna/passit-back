@@ -59,7 +59,7 @@ func getAllKeys(iface interface{}, parts ...string) []string {
 	var keys []string
 
 	ifv := reflect.ValueOf(iface)
-	if ifv.Kind() == reflect.Ptr {
+	if ifv.Kind() == reflect.Pointer {
 		ifv = ifv.Elem()
 	}
 
@@ -75,7 +75,7 @@ func getAllKeys(iface interface{}, parts ...string) []string {
 		switch v.Kind() {
 		case reflect.Struct:
 			keys = append(keys, getAllKeys(v.Interface(), append(parts, tv)...)...)
-		case reflect.Ptr:
+		case reflect.Pointer:
 			if v.IsNil() && v.CanSet() {
 				v.Set(reflect.New(v.Type().Elem()))
 			}
